@@ -1,0 +1,5 @@
+[general]
+library_name = "libscorep_adapter_user_event"
+output_file_path = "./LibScoreP.jl"
+module_name = "LibScoreP"
+export_symbol_prefixes = ["SCOREP_User"]

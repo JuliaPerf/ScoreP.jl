@@ -4,3 +4,4 @@ docs/build/*
 docs/src/assets/themes/*
 .vscode
 .DS_Store
+resources/include/*

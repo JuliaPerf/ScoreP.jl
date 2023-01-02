@@ -1,0 +1,1 @@
+Includes from [here](https://gitlab.com/score-p/scorep/-/tree/v7.x/include/scorep) (for ScoreP v7.x) downloaded as tarball and extracted such that the `include` folder is here (i.e. include are under `./resources/include/scorep` eventually).
