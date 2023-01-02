@@ -1,5 +1,6 @@
 module LibScoreP
 
+using ..ScoreP: libscorep_adapter_user_event
 using CEnum
 
 mutable struct SCOREP_LibwrapHandle end
