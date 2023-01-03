@@ -46,16 +46,25 @@ end
 #     return nothing
 # end
 
+"""
+Returns a collection that has `path` as the first element and all other elements as in
+`args`. If `path` is already the first element in `args`, nothing is prepended.
+"""
+function maybe_prepend(args, path)
+    if isempty(args) || args[1] != path
+        args = copy(args)
+        prepend!(args, Ref(path))
+    end
+    return args
+end
+
 # The exec* family of functions, check out the following for an overview:
 #     https://docs.python.org/3/library/os.html#os.execl
 
 # execv
 "Inherits the environment variables."
 function execv(path::AbstractString, args::Vector{String})
-    if isempty(args) || args[1] != path
-        args = copy(args)
-        prepend!(args, Ref(path))
-    end
+    args = maybe_prepend(args, path)
     posix_execv(path, args)
 end
 function posix_execv(path::AbstractString, argv::AbstractVector{<:AbstractString})
@@ -68,10 +77,7 @@ Does **not** inherit the environment variables. The argument `env` specifies the
 environment and can be a vector of strings in the form `\"key=value\"` or a dictionary.
 """
 function execve(path::AbstractString, args::Vector{String}, env::Vector{String})
-    if isempty(args) || args[1] != path
-        args = copy(args)
-        prepend!(args, Ref(path))
-    end
+    args = maybe_prepend(args, path)
     posix_execve(path, args, env)
 end
 function execve(path, args, env::AbstractDict)
@@ -89,10 +95,7 @@ Looks up `filename` in PATH to find the program to execute. Inherits the environ
 variables.
 """
 function execvp(filename::AbstractString, args::Vector{String})
-    if isempty(args) || args[1] != filename
-        args = copy(args)
-        prepend!(args, Ref(filename))
-    end
+    args = maybe_prepend(args, filename)
     posix_execvp(filename, args)
 end
 function posix_execvp(filename::AbstractString, argv::AbstractVector{<:AbstractString})
