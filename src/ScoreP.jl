@@ -5,7 +5,6 @@ const libscorep_adapter_user_event = "/upb/departments/pc2/users/b/bauerc/.local
 include("LibScoreP.jl")
 using .LibScoreP
 include("utility.jl")
-include("scorep_config.jl")
 include("subsystem.jl")
 
 end # module ScoreP

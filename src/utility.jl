@@ -23,25 +23,25 @@ function add_to_env_var(envvar::AbstractString, path::AbstractString)
     return nothing
 end
 
-"Restore `LD_PRELOAD` based on `SCOREPJL_LD_PRELOAD_BACKUP`."
+"Restore `LD_PRELOAD` based on `SCOREP_JL_LD_PRELOAD_BACKUP`."
 function restore_ld_preload()
-    if haskey(ENV, "SCOREPJL_LD_PRELOAD_BACKUP")
-        if ENV["SCOREPJL_LD_PRELOAD_BACKUP"] == ""
+    if haskey(ENV, "SCOREP_JL_LD_PRELOAD_BACKUP")
+        if ENV["SCOREP_JL_LD_PRELOAD_BACKUP"] == ""
             delete!(ENV, "LD_PRELOAD")
         else
-            ENV["LD_PRELOAD"] = ENV["SCOREPJL_LD_PRELOAD_BACKUP"]
+            ENV["LD_PRELOAD"] = ENV["SCOREP_JL_LD_PRELOAD_BACKUP"]
         end
     end
     return nothing
 end
 
 # function set_ld_preload(value::AbstractString)
-#     if !haskey(ENV, "SCOREPJL_LD_PRELOAD_BACKUP") ||
-#        isempty(ENV["SCOREPJL_LD_PRELOAD_BACKUP"])
-#         ENV["SCOREPJL_LD_PRELOAD_BACKUP"] = value
+#     if !haskey(ENV, "SCOREP_JL_LD_PRELOAD_BACKUP") ||
+#        isempty(ENV["SCOREP_JL_LD_PRELOAD_BACKUP"])
+#         ENV["SCOREP_JL_LD_PRELOAD_BACKUP"] = value
 #     else
 #         # Do we want to throw an error here?
-#         # error("`SCOREPJL_LD_PRELOAD_BACKUP` already set. Aborting.")
+#         # error("`SCOREP_JL_LD_PRELOAD_BACKUP` already set. Aborting.")
 #     end
 #     return nothing
 # end
