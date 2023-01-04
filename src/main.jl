@@ -15,38 +15,6 @@ function scorep_main(args = String[]; keep_files = false)
     return nothing
 end
 
-function restart_julia_inplace()
-    # julia = jlopts.julia_bin |> unsafe_string
-    julia = joinpath(Sys.BINDIR, Base.julia_exename())
-    jlopts = Base.JLOptions()
-    sysimg = jlopts.image_file |> unsafe_string
-    scriptname = PROGRAM_FILE
-
-    project_str = "--project=" * Base.active_project()
-    sysimg_str = "-J" * sysimg
-    args = [project_str, sysimg_str]
-
-    if jlopts.fast_math == 1
-        push!(args, "--math-mode=fast")
-    end
-    if jlopts.check_bounds == 1
-        push!(args, "--check-bounds=yes")
-    elseif jlopts.check_bounds == 2
-        push!(args, "--check-bounds=no")
-    end
-    # TODO support more / all julia command line options. Incomplete but we might be able
-    # to copy code from Base.julia_cmd().
-
-    if !isempty(scriptname) # interactive REPL
-        append!(args, [scriptname, ARGS...])
-    else
-        append!(args, [ARGS...])
-    end
-
-    @debug("execve", julia, args)
-    execve(julia, args, ENV)
-end
-
 """
 Compiles the subsystem (shared library) in a temporary directory, adds this tempdir to
 `LD_LIBRARY_PATH`,

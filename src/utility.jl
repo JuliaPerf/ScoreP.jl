@@ -115,3 +115,47 @@ end
 function posix_execvp(filename::AbstractString, argv::AbstractVector{<:AbstractString})
     @ccall execvp(filename::Ptr{Cchar}, argv::Ptr{Ptr{Cchar}})::Cint
 end
+
+"""
+Replaces the current Julia process by a new one (see `execve`). The new process will have
+all environment variables set as in `ENV` at the point of calling the function.
+
+Effectively, this allows one to (seemingly) change `LD_LIBRARY_PATH` and `LD_PRELOAD` while
+Julia is running: Modify `ENV` and call this function for an "inplace restart".
+
+*Warning:* To start the new Julia process, this function needs to figure out how Julia was
+originally started, i.e., which command line arguments have been provided to `julia`.
+Currently not all options will be forwarded to the new process!
+"""
+function restart_julia_inplace()
+    # julia = jlopts.julia_bin |> unsafe_string
+    julia = joinpath(Sys.BINDIR, Base.julia_exename())
+    jlopts = Base.JLOptions()
+    sysimg = jlopts.image_file |> unsafe_string
+    scriptname = PROGRAM_FILE
+
+    project_str = "--project=" * Base.active_project()
+    sysimg_str = "-J" * sysimg
+    args = [project_str, sysimg_str, "--quiet"]
+
+    if jlopts.fast_math == 1
+        push!(args, "--math-mode=fast")
+    end
+    if jlopts.check_bounds == 1
+        push!(args, "--check-bounds=yes")
+    elseif jlopts.check_bounds == 2
+        push!(args, "--check-bounds=no")
+    end
+    # TODO support more / all julia command line options. Incomplete but we might be able
+    # to copy code from Base.julia_cmd().
+
+    if !isempty(scriptname) # interactive REPL
+        append!(args, [scriptname, ARGS...])
+    else
+        append!(args, [ARGS...])
+    end
+
+    println()
+    @debug("execve", julia, args)
+    execve(julia, args, ENV)
+end
