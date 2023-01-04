@@ -6,5 +6,6 @@ include("LibScoreP.jl")
 using .LibScoreP
 include("utility.jl")
 include("subsystem.jl")
+include("main.jl")
 
 end # module ScoreP
