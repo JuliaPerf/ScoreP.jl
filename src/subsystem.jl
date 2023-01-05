@@ -64,7 +64,7 @@ function compile_subsystem(args = String[]; keep_files = false)
 
     # TODO: linker_flags stuff
 
-    tempdir = mktempdir(; prefix = "scorep_jl.")
+    tempdir = mktempdir(; prefix = "scorep_jl.", cleanup = !keep_files)
     ENV["SCOREP_JL_COMPILATION_DIR"] = tempdir
     @debug("SCOREP_JL_COMPILATION_DIR: $tempdir")
 

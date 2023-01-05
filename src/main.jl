@@ -11,7 +11,7 @@ function scorep_main(args = String[]; keep_files = false)
         restore_ld_preload()
     end
 
-    @debug "LEAVING scorep_main"
+    @debug "LEAVING $(@__FUNCTION__())"
     return nothing
 end
 
@@ -30,7 +30,7 @@ function prepare_environment(args = String[]; keep_files = false)
 
     # debugging
     prev_env = copy(ENV)
-    @debug("prepare_environment", join(args, ' '))
+    @debug(@__FUNCTION__(), join(args, ' '))
 
     subsystem_libname, tempdir = compile_subsystem(args; keep_files)
     scorep_ld_preload_str = _generate_ld_preload_string(args)
