@@ -27,6 +27,10 @@ sudo make install
 
 **Note:** You might want to also provide a `--prefix=/my/user/dir/` to `configure` to install into non-global user directory. In this case, you can drop the `sudo` in the last line.
 
+## Score-P Ecosystem
+
+![](https://github.com/JuliaPerf/ScoreP.jl/raw/main/scorep_ecosystem.png)
+
 ## Acknowledgements
 
 * The Python analogon [scorep_binding_python](https://github.com/score-p/scorep_binding_python) was as a valuable resource for inspiration.
