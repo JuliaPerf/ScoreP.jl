@@ -34,3 +34,7 @@ sudo make install
 ## Acknowledgements
 
 * The Python analogon [scorep_binding_python](https://github.com/score-p/scorep_binding_python) was as a valuable resource for inspiration.
+
+## Credits
+
+This package is an effort by the [Paderborn Center for Parallel Computing (PC²)](https://pc2.uni-paderborn.de/).
