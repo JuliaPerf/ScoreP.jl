@@ -6,3 +6,4 @@ docs/src/assets/themes/*
 .DS_Store
 resources/include/*
 scorep-*
+*.so

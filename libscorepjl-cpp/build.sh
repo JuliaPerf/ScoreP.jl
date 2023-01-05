@@ -1,0 +1,1 @@
+g++ --shared -fPIC -o libscorepjl.so libscorepjl.cpp

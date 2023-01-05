@@ -16,9 +16,8 @@ function _check_scorep_config_args(args = String[])
     scorep_config = `scorep-config $args`
     ret, _, _ = _execute(scorep_config)
     if ret != 0
-        throw(ArgumentError("Given scorep-config `args` aren't supportet (led to non-zero "
-                            *
-                            "exit code)."))
+        throw(ArgumentError("Given scorep config arguments (`args`) aren't supportet " *
+                            "LibScoreP.jl(led to non-zero exit code)."))
     end
     return nothing
 end

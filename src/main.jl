@@ -1,15 +1,61 @@
-function scorep_main(args = String[]; keep_files = false)
-    if !isempty(ARGS)
+"""
+Main entry function.
+
+1) Compiles the subsystem in a temporary directory.
+2) Prepares the environment (i.e. `LD_LIBRARY_PATH` and `LD_PRELOAD`)
+3) Restarts the Julia session "in-place"
+
+Afterwards, the ScoreP bindings can be used.
+"""
+function init(allargs = ARGS; keep_files = false)
+    scorep_config_args = String[]
+    script_args = String[]
+
+    if !isempty(allargs)
+        for (i, arg) in pairs(allargs)
+            # ScoreP.jl args
+            if arg == "--keep-files"
+                keep_files = true
+            elseif arg in ("--verbose", "-v", "--debug")
+                set_logging_level(:debug)
+                # scorep-config args
+            elseif arg == "--mpi"
+                push!(scorep_config_args, "--mpp=mpi")
+            elseif arg[1] == '-'
+                push!(scorep_config_args, arg)
+                # script args
+            else
+                # no scorep config args left -> rest is script args
+                append!(script_args, allargs[i:end])
+                break
+            end
+        end
         # TODO: process arguments / pass them on to scorep-config
     end
 
-    if !(lowercase(get(ENV, "SCOREP_JL_INITIALISED", "false")) == "true")
-        prepare_environment(args; keep_files)
+    # set defaults for a few scorep config args if they haven't already been user-specified
+    isset(x) = any(startswith(x), scorep_config_args)
+    if !isset("--thread")
+        push!(scorep_config_args, "--thread=pthread")
+    elseif !isset("--nocompiler")
+        push!(scorep_config_args, "--compiler")
+    end
+
+    @debug("Input arguments", join(scorep_config_args, ' '), join(script_args, ' '))
+
+    initialised = lowercase(get(ENV, "SCOREP_JL_INITIALISED", "")) == "true"
+    if !initialised
+        @debug("INITIALISED=FALSE")
+        init_environment(scorep_config_args; keep_files)
         ENV["SCOREP_JL_INITIALISED"] = "true"
         restart_julia_inplace()
     else
         restore_ld_preload()
+        @debug("INITIALISED=TRUE")
     end
+
+    # good to go
+    setARGS(script_args)
 
     @debug "LEAVING $(@__FUNCTION__())"
     return nothing
@@ -17,9 +63,9 @@ end
 
 """
 Compiles the subsystem (shared library) in a temporary directory, adds this tempdir to
-`LD_LIBRARY_PATH`,
+`LD_LIBRARY_PATH`, and sets `LD_PRELOAD` appropriately.
 """
-function prepare_environment(args = String[]; keep_files = false)
+function init_environment(args = String[]; keep_files = false)
     if contains(get(ENV, "LD_PRELOAD", ""), "libscorep")
         error("`LD_PRELOAD` already contains libscorep libraries. Aborting.")
     end

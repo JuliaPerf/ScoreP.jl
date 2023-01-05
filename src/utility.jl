@@ -25,6 +25,39 @@ macro __FUNCTION__()
     end
 end
 
+isactive() = lowercase(get(ENV, "SCOREP_JL_INITIALISED", "")) == "true"
+
+"""
+Can be used to set the global logging level to either `:debug`, `:warn`, or
+`:info`. The default level in Julia is essentially `:warn`.
+
+Replaces the global logger with a `ConsoleLogger` with the appropriate logging level.
+"""
+function set_logging_level(level)
+    if level == :debug || level == Logging.Debug
+        logger = Logging.ConsoleLogger(stderr, Logging.Debug)
+    elseif level in (:warn, :default) || level == Logging.Warn
+        logger = Logging.ConsoleLogger(stderr, Logging.Warn)
+    elseif level == :info || level == Logging.Info
+        logger = Logging.ConsoleLogger(stderr, Logging.Info)
+    else
+        throw(ArgumentError("Unknown logging level. Supported are `:debug`, `:warn`, " *
+                            "and `:info`."))
+    end
+    Logging.global_logger(logger)
+    return nothing
+end
+
+"Replace `ARGS` by the given vector of strings."
+function setARGS(args::AbstractVector{<:AbstractString})
+    resize!(ARGS, length(args))
+    @assert length(ARGS) == length(args)
+    for i in eachindex(args)
+        ARGS[i] = args[i]
+    end
+    return nothing
+end
+
 function _is_results_dir(dir)
     # scorep-20230105_0959_16318275631842706
     regex = r"scorep-[0-9]+_[0-9]+_[0-9]+"
@@ -38,6 +71,7 @@ Removes all folders in the current directory (`pwd()`) that match the regex patt
 function cleanup_results()
     for rdir in filter(_is_results_dir, readdir())
         rm(rdir; recursive = true)
+        @info("Removed $rdir")
     end
     return nothing
 end
@@ -73,6 +107,19 @@ function cleanup_subsystem_all()
         @info("Removed $dir")
     end
     return nothing
+end
+
+"""
+Deletes
+* all results in the current directory,
+* all subsystem compilation directories in `/tmp` (or similar).
+"""
+function cleanup()
+    @info("Cleaning up results...")
+    cleanup_results()
+    println()
+    @info("Cleaning up temporary directories...")
+    cleanup_subsystem_all()
 end
 
 "Add the given `path` to the environment variable `envvar` with colon delimiter (`:`)."
@@ -111,17 +158,6 @@ function _env_var_changes(envvar, prev_env, new_env = ENV)
     end
     return "$envvar=$new_val"
 end
-
-# function set_ld_preload(value::AbstractString)
-#     if !haskey(ENV, "SCOREP_JL_LD_PRELOAD_BACKUP") ||
-#        isempty(ENV["SCOREP_JL_LD_PRELOAD_BACKUP"])
-#         ENV["SCOREP_JL_LD_PRELOAD_BACKUP"] = value
-#     else
-#         # Do we want to throw an error here?
-#         # error("`SCOREP_JL_LD_PRELOAD_BACKUP` already set. Aborting.")
-#     end
-#     return nothing
-# end
 
 """
 Returns a collection that has `path` as the first element and all other elements as in
@@ -191,41 +227,58 @@ Julia is running: Modify `ENV` and call this function for an "inplace restart".
 originally started, i.e., which command line arguments have been provided to `julia`.
 Currently not all options will be forwarded to the new process!
 """
-function restart_julia_inplace(; load_scorep = true, inherit_debuglogging = true)
-    # julia = jlopts.julia_bin |> unsafe_string
+function restart_julia_inplace(args = ARGS; load_scorep = true, inherit_debuglogging = true)
+    # julia binary
     julia = joinpath(Sys.BINDIR, Base.julia_exename())
-    jlopts = Base.JLOptions()
-    sysimg = jlopts.image_file |> unsafe_string
-    scriptname = PROGRAM_FILE
 
-    project_str = "--project=" * Base.active_project()
-    sysimg_str = "-J" * sysimg
-    args = [project_str, sysimg_str, "--quiet"]
+    # julia arguments (e.g. --project, --check-bounds etc.)
+    jl_args = get_julia_args()
 
-    if jlopts.fast_math == 1
-        push!(args, "--math-mode=fast")
-    end
-    if jlopts.check_bounds == 1
-        push!(args, "--check-bounds=yes")
-    elseif jlopts.check_bounds == 2
-        push!(args, "--check-bounds=no")
-    end
-    # TODO support more / all julia command line options. Incomplete but we might be able
-    # to copy code from Base.julia_cmd().
-
+    # non julia arguments (e.g. script name, remaining arguments etc.)
     if !isinteractive()
-        @assert !isempty(scriptname)
-        append!(args, [scriptname, ARGS...])
-    else # interactive REPL
-        @assert isempty(scriptname)
-        startup_cmd = load_scorep ? "using ScoreP; ScoreP.scorep_main();" : ""
+        # script mode (no REPL)
+        @assert !isempty(PROGRAM_FILE)
+        scriptname = PROGRAM_FILE
+        nonjl_args = [scriptname, args...]
+    else
+        # interactive REPL
+        @assert isempty(PROGRAM_FILE)
+        startup_code = load_scorep ? "using ScoreP; ScoreP.init();" : ""
         if inherit_debuglogging && global_logger().min_level == Logging.Debug
-            startup_cmd *= "using Logging; global_logger(ConsoleLogger(stderr, Logging.Debug));"
+            startup_code *= "using Logging; global_logger(ConsoleLogger(stderr, Logging.Debug));"
         end
-        append!(args, ["-e $startup_cmd", "-i", ARGS...])
+        nonjl_args = ["-e $startup_code", "-i", args...]
         println() # just minor cosmetics :)
     end
 
-    @debug("execve", julia, args)
-    execve(julia, args, ENV)
+    execve_args = vcat(jl_args, nonjl_args)
+    @debug("execve", julia, execve_args)
+    execve(julia, execve_args, ENV)
+end
+
+function get_julia_args()
+    jlopts = Base.JLOptions()
+    project_str = "--project=" * Base.active_project()
+    sysimg_str = "-J" * unsafe_string(jlopts.image_file)
+    jl_args = [project_str, sysimg_str, "--quiet"]
+
+    if jlopts.fast_math == 1
+        push!(jl_args, "--math-mode=fast")
+    end
+    if jlopts.check_bounds == 1
+        push!(jl_args, "--check-bounds=yes")
+    elseif jlopts.check_bounds == 2
+        push!(jl_args, "--check-bounds=no")
+    end
+
+    # -L and others(?)
+    jlcmds = Base.unsafe_load_commands(Base.JLOptions().commands)
+    idx = findfirst(p -> p[1] == 'L', jlcmds)
+    if !isnothing(idx)
+        pushfirst!(jl_args, "--load=" * jlcmds[idx][2])
+    end
+
+    # TODO support more / all julia command line options. Incomplete but we might be able
+    # to copy code from Base.julia_cmd().
+    return jl_args
 end
