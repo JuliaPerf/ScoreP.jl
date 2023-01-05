@@ -2,6 +2,8 @@
 
 *Tracing and profiling Julia code with [Score-P](https://www.vi-hps.org/projects/score-p)*
 
+**This package is currently in pre-alpha condition. Don't expect anything to work!**
+
 ## Install
 
 ### ScoreP.jl (Julia Interface)
