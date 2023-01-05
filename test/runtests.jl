@@ -5,4 +5,4 @@ using TestItemRunner
 
 @run_package_tests
 
-# @testitem "utility" begin include("utility_test.jl") end
+@testitem "utility" begin include("utility_tests.jl") end

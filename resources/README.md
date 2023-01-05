@@ -1,6 +1,6 @@
 Includes from [here](https://gitlab.com/score-p/scorep/-/tree/v7.x/include/scorep) (for ScoreP v7.x) downloaded as tarball and extracted such that the `include` folder is here (i.e. include are under `./resources/include/scorep` eventually).
 
-Relevant instrumenting API seems to be in `libscorep_adapter_user_event.so`:
+Relevant instrumenting API seems to be in `libscorep_adapter_user_event.so`, see also the [User Adapter documentation page](https://perftools.pages.jsc.fz-juelich.de/cicd/scorep/tags/scorep-7.1/html/group__SCOREP__User.html).
 
 ```
 ➜  bauerc@ln-0002 scorep git:(main)  nm -D ~/.local/lib/libscorep_adapter_user_event.so
