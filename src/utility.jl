@@ -60,13 +60,13 @@ end
 
 function _is_results_dir(dir)
     # scorep-20230105_0959_16318275631842706
-    regex = r"scorep-[0-9]+_[0-9]+_[0-9]+"
+    regex = r"scorep-(failed-)?[0-9]+_[0-9]+_[0-9]+"
     return !isnothing(match(regex, dir))
 end
 
 """
 Removes all folders in the current directory (`pwd()`) that match the regex pattern
-`scorep-[0-9]+_[0-9]+_[0-9]+`.
+`scorep-(failed-)?[0-9]+_[0-9]+_[0-9]+`.
 """
 function cleanup_results()
     for rdir in filter(_is_results_dir, readdir())
@@ -242,10 +242,25 @@ function restart_julia_inplace(args = ARGS; load_scorep = true, inherit_debuglog
         nonjl_args = [scriptname, args...]
     else
         # interactive REPL
-        @assert isempty(PROGRAM_FILE)
         startup_code = load_scorep ? "using ScoreP; ScoreP.init();" : ""
         if inherit_debuglogging && global_logger().min_level == Logging.Debug
             startup_code *= "using Logging; global_logger(ConsoleLogger(stderr, Logging.Debug));"
+        end
+        if !isempty(PROGRAM_FILE)
+            if endswith(PROGRAM_FILE, "terminalserver.jl")
+                # VSCode integrated REPL (exception)
+                # @show PROGRAM_FILE
+                # pushfirst!(args, "USE_REVISE=true")
+                # pushfirst!(args, "ENABLE_SHELL_INTEGRATION=true")
+                # pushfirst!(args, "USE_PLOTPANE=true")
+                # pushfirst!(args, "USE_PROGRESS=true")
+                # pushfirst!(args, "DEBUG_MODE=false")
+                # startup_code *= "include(\"$PROGRAM_FILE\");"
+                # error("Integrated REPL in VSCode is currently not supported.")
+            else
+                error("isinteractive() but also !isempty(PROGRAM_FILE). This is " *
+                      "currently not supported.")
+            end
         end
         nonjl_args = ["-e $startup_code", "-i", args...]
         println() # just minor cosmetics :)
