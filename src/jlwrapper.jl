@@ -23,14 +23,15 @@ end
 
 function region_begin(region_name::String, module_name::String = string(@__MODULE__);
                       handle = LibScoreP.SCOREP_USER_INVALID_REGION)
-    LibScoreP.SCOREP_User_RegionBegin(Ref(handle),
+    handle_ref = Ref(handle)
+    LibScoreP.SCOREP_User_RegionBegin(handle_ref,
                                       C_NULL,
                                       Ref(SCOREP_User_LastFileHandle),
                                       region_name,
                                       LibScoreP.SCOREP_USER_REGION_TYPE_FUNCTION,
                                       @__FILE__,
                                       @__LINE__)
-    return handle
+    return handle_ref[]
 end
 
 function region_end(handle::LibScoreP.SCOREP_User_RegionHandle)
