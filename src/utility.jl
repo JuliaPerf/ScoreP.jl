@@ -227,7 +227,7 @@ Julia is running: Modify `ENV` and call this function for an "inplace restart".
 originally started, i.e., which command line arguments have been provided to `julia`.
 Currently not all options will be forwarded to the new process!
 """
-function restart_julia_inplace(args = ARGS; load_scorep = true, inherit_debuglogging = true)
+function restart_julia_inplace(args = ARGS; load_scorep = true, scorepjl_args = String[])
     # julia binary
     julia = joinpath(Sys.BINDIR, Base.julia_exename())
 
@@ -242,8 +242,14 @@ function restart_julia_inplace(args = ARGS; load_scorep = true, inherit_debuglog
         nonjl_args = [scriptname, args...]
     else
         # interactive REPL
-        startup_code = load_scorep ? "using ScoreP; ScoreP.init();" : ""
-        if inherit_debuglogging && global_logger().min_level == Logging.Debug
+        startup_code = ""
+        if "--revise" in scorepjl_args || isdefined(Main, :Revise)
+            startup_code *= "using Revise;"
+        end
+        if load_scorep
+            startup_code *= "using ScoreP; ScoreP.init();"
+        end
+        if "--debug" in scorepjl_args
             startup_code *= "using Logging; global_logger(ConsoleLogger(stderr, Logging.Debug));"
         end
         if !isempty(PROGRAM_FILE)
@@ -284,6 +290,9 @@ function get_julia_args()
         push!(jl_args, "--check-bounds=yes")
     elseif jlopts.check_bounds == 2
         push!(jl_args, "--check-bounds=no")
+    end
+    if jlopts.nthreads > 0
+        push!(jl_args, "--threads=$(jlopts.nthreads)")
     end
 
     # -L and others(?)

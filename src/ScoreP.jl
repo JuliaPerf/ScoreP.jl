@@ -11,4 +11,6 @@ include("jlwrapper.jl")
 include("subsystem.jl")
 include("main.jl")
 
+export LibScoreP
+
 end # module ScoreP

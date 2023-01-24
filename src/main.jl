@@ -9,6 +9,7 @@ Afterwards, the ScoreP bindings can be used.
 """
 function init(allargs = ARGS; keep_files = false)
     scorep_config_args = String[]
+    scorepjl_args = String[]
     script_args = String[]
 
     if !isempty(allargs)
@@ -17,7 +18,10 @@ function init(allargs = ARGS; keep_files = false)
             if arg == "--keep-files"
                 keep_files = true
             elseif arg in ("--verbose", "-v", "--debug")
+                push!(scorepjl_args, "--verbose")
                 set_logging_level(:debug)
+            elseif arg == "--revise"
+                push!(scorepjl_args, "--revise")
                 # scorep-config args
             elseif arg == "--mpi"
                 push!(scorep_config_args, "--mpp=mpi")
@@ -48,7 +52,7 @@ function init(allargs = ARGS; keep_files = false)
         @debug("INITIALISED=FALSE")
         init_environment(scorep_config_args; keep_files)
         ENV["SCOREP_JL_INITIALISED"] = "true"
-        restart_julia_inplace()
+        restart_julia_inplace(; scorepjl_args)
     else
         restore_ld_preload()
         @debug("INITIALISED=TRUE")
