@@ -2,6 +2,7 @@
 println("User Code!")
 @show ARGS
 
+using ScoreP # optional / no-op
 using LinearAlgebra
 
 function workload(iter, N = 1000)
@@ -30,14 +31,6 @@ end
 # warmup
 workload(10, 1)
 
-handle = ScoreP.region_begin("matmul")
-workload(500)
-ScoreP.region_end(handle)
-
-handle = ScoreP.region_begin("matmul large")
-workload(5000)
-ScoreP.region_end(handle)
-
-handle = ScoreP.region_begin("matmuls multithreaded")
-workload_multithreaded(10)
-ScoreP.region_end(handle)
+@scorep_user_region_stored "matmul" workload(500)
+@scorep_user_region_stored "matmul large" workload(5000)
+@scorep_user_region_stored "matmuls multithreaded" workload_multithreaded(500)

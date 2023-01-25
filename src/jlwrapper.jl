@@ -2,35 +2,49 @@ SCOREP_User_LastFileHandle::LibScoreP.SCOREP_SourceFileHandle = LibScoreP.SCOREP
 
 regions = Dict{String, LibScoreP.SCOREP_User_RegionHandle}()
 
-function region_begin_manual(region_name::String, module_name::String = string(@__MODULE__))
+function region_begin_stored(region_name::String;
+                             module_name = string(@__MODULE__),
+                             file = @__FILE__,
+                             line = @__LINE__,
+                             type = LibScoreP.SCOREP_USER_REGION_TYPE_COMMON)
     if !(region_name in keys(regions))
-        handle = LibScoreP.SCOREP_USER_INVALID_REGION
-        LibScoreP.SCOREP_User_RegionInit(Ref(handle),
+        handle_ref = Ref(LibScoreP.SCOREP_USER_INVALID_REGION)
+        LibScoreP.SCOREP_User_RegionInit(handle_ref,
                                          C_NULL,
                                          Ref(SCOREP_User_LastFileHandle),
                                          region_name,
-                                         LibScoreP.SCOREP_USER_REGION_TYPE_FUNCTION,
-                                         @__FILE__,
-                                         @__LINE__)
-        LibScoreP.SCOREP_User_RegionSetGroup(handle, module_name)
+                                         type,
+                                         file,
+                                         line)
+        LibScoreP.SCOREP_User_RegionSetGroup(handle_ref[], module_name)
+        handle = handle_ref[]
         regions[region_name] = handle
     else
         handle = regions[region_name]
     end
-    # LibScoreP.SCOREP_User_RegionEnter(handle)
+    LibScoreP.SCOREP_User_RegionEnter(handle)
     return nothing
 end
 
-function region_begin(region_name::String, module_name::String = string(@__MODULE__);
-                      handle = LibScoreP.SCOREP_USER_INVALID_REGION)
+function region_end_stored(region_name::String)
+    handle = regions[region_name]
+    LibScoreP.SCOREP_User_RegionEnd(handle)
+    return nothing
+end
+
+function region_begin(region_name::String;
+                      handle = LibScoreP.SCOREP_USER_INVALID_REGION,
+                      file = @__FILE__,
+                      line = @__LINE__,
+                      type = LibScoreP.SCOREP_USER_REGION_TYPE_COMMON)
     handle_ref = Ref(handle)
     LibScoreP.SCOREP_User_RegionBegin(handle_ref,
                                       C_NULL,
                                       Ref(SCOREP_User_LastFileHandle),
                                       region_name,
-                                      LibScoreP.SCOREP_USER_REGION_TYPE_FUNCTION,
-                                      @__FILE__,
-                                      @__LINE__)
+                                      type,
+                                      file,
+                                      line)
     return handle_ref[]
 end
 
@@ -39,16 +53,38 @@ function region_end(handle::LibScoreP.SCOREP_User_RegionHandle)
     return nothing
 end
 
-# macros
+# macros / wrapper functions
 
-macro SCOREP_USER_REGION_DEFINE(handle)
-    esc(quote
-            $handle = LibScoreP.SCOREP_USER_INVALID_REGION
-        end)
+function scorep_user_region(f, region_name; kwargs...)
+    handle = ScoreP.region_begin(region_name; kwargs...)
+    f()
+    ScoreP.region_end(handle)
 end
 
-# macro SCOREP_USER_REGION_DEFINE(handle)
-#     esc(quote
-#             $handle = LibScoreP.SCOREP_USER_INVALID_REGION
-#         end)
-# end
+macro scorep_user_region(region_name, expr)
+    file = string(__source__.file)
+    line = __source__.line
+    handlesym = gensym()
+    q = quote
+        let $handlesym = ScoreP.region_begin($(region_name); line = $line, file = $file)
+            $expr
+            ScoreP.region_end($handlesym)
+        end
+    end
+    return esc(q)
+end
+
+macro scorep_user_region_stored(region_name, expr)
+    mod = string(__module__)
+    file = string(__source__.file)
+    line = __source__.line
+    q = quote
+        ScoreP.region_begin_stored($(region_name);
+                                   module_name = $mod,
+                                   line = $line,
+                                   file = $file)
+        $expr
+        ScoreP.region_end_stored($(region_name))
+    end
+    return esc(q)
+end
