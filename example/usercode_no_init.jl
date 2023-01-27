@@ -31,6 +31,6 @@ end
 # warmup
 workload(10, 1)
 
-@scorep_user_region_stored "matmul" workload(500)
-@scorep_user_region_stored "matmul large" workload(5000)
-@scorep_user_region_stored "matmuls multithreaded" workload_multithreaded(500)
+@scorep_user_region "matmul" workload(500)
+@scorep_user_region "matmul large" workload(5000)
+@scorep_user_region "matmuls multithreaded" workload_multithreaded(500)

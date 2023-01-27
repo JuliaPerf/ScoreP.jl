@@ -12,7 +12,6 @@ include("subsystem.jl")
 include("main.jl")
 
 export LibScoreP,
-       @scorep_user_region,
-       @scorep_user_region_stored
+       @scorep_user_region
 
 end # module ScoreP
