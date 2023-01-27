@@ -4,6 +4,47 @@
 
 **This package is currently in pre-alpha condition. Don't expect anything to work!**
 
+## Demo
+
+### Basics
+
+```julia
+# example.jl
+using ScoreP
+ScoreP.init()
+
+# ScoreP initialization must come before anything else!
+
+X = rand(100_000)
+
+@scorep_user_region "sin" X .= sin.(X)
+
+@scorep_user_region "code block" begin
+    @scorep_user_region "allocs" begin
+        A = rand(1000,1000)
+        B = rand(1000,1000)
+    end
+    @scorep_user_region "loop" begin
+        for _ in 1:10
+            A * B
+        end
+    end
+end
+```
+
+Running this (`julia example.jl`) generates a folder, e.g., `scorep-20230127_1603_20921538990107094` (you can set `export SCOREP_EXPERIMENT_DIRECTORY=foldername` to choose a specific folder name up-front). In it is a `profile.cubex` file which contains the profiling information. You can open `.cubex` files with [Cube](https://www.scalasca.org/scalasca/software/cube-4.x/download.html). For the example above, this should give you something like this:
+
+TODO
+
+#### Tracing
+
+Running the same example with `export SCOREP_ENABLE_TRACING=true` the output folder will besides the profiling results contain tracing information as well, specifically, a file `traces.otf2`. The latter can be opened with the (commerical) software [Vampir](https://vampir.eu/) and should give you something like the following.
+
+TODO
+
+On Linux and Windows, it should also be possible to use the [Intel Trace Analyzer](https://www.intel.com/content/www/us/en/developer/tools/oneapi/trace-analyzer.html#gs.oc8bgr) or other OTF2 visualizers.
+
+
 ## Install
 
 ### ScoreP.jl (Julia Interface)

@@ -1,3 +1,5 @@
+SCOREP_User_LastFileHandle::LibScoreP.SCOREP_SourceFileHandle = LibScoreP.SCOREP_INVALID_SOURCE_FILE
+
 function region_begin(region_name::String;
                       handle = LibScoreP.SCOREP_USER_INVALID_REGION,
                       file = @__FILE__,
@@ -54,18 +56,14 @@ macro scorep_user_region(region_name, expr)
     line = __source__.line
     handlesym = gensym()
     q = quote
-        let $handlesym = ScoreP.region_begin($(region_name); line = $line, file = $file)
-            $expr
-            ScoreP.region_end($handlesym)
-        end
+        $handlesym = ScoreP.region_begin($(region_name); line = $line, file = $file)
+        $expr
+        ScoreP.region_end($handlesym)
     end
     return esc(q)
 end
 
 # ---- Global handle storage ----
-
-# SCOREP_User_LastFileHandle::LibScoreP.SCOREP_SourceFileHandle = LibScoreP.SCOREP_INVALID_SOURCE_FILE
-
 # regions = Dict{String, LibScoreP.SCOREP_User_RegionHandle}()
 
 # function region_begin_stored(region_name::String;
