@@ -11,12 +11,6 @@
 * **You must be on Linux.**
 * You must have `gcc` installed (and on `PATH`).
 
-### ScoreP.jl (Julia Interface)
-
-```julia
-] add https://github.com/JuliaPerf/ScoreP.jl
-```
-
 ### Score-P (Parent Software)
 
 ```
@@ -31,6 +25,12 @@ sudo make install
 ```
 
 **Note:** You might want to also provide a `--prefix=/my/user/dir/` to `configure` to install into non-global user directory. In this case, you can drop the `sudo` in the last line.
+
+### ScoreP.jl
+
+```julia
+] add https://github.com/JuliaPerf/ScoreP.jl
+```
 
 ## Basics
 
