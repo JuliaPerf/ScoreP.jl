@@ -6,6 +6,11 @@
 
 ## Install
 
+### Prerequisites
+
+* **You must be on Linux.**
+* You must have `gcc` installed (and on `PATH`).
+
 ### ScoreP.jl (Julia Interface)
 
 ```julia
