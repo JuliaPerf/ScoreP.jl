@@ -58,6 +58,17 @@ function init(allargs = ARGS; keep_files = false)
         @debug("INITIALISED=TRUE")
     end
 
+    if !keep_files
+        tempdir = get(ENV, "SCOREP_JL_COMPILATION_DIR", nothing)
+        if isnothing(tempdir)
+            @warn("`keep_files == false` but ENV[\"SCOREP_JL_COMPILATION_DIR\"] is "*
+                  "unset/empty. Won't be able to delete the temporary files.")
+        else
+            # register atexit hook that will delete tempdir when the julia process stops.
+            atexit(() -> rm(tempdir; recursive = true, force = true))
+        end
+    end
+
     # good to go
     setARGS(script_args)
 
