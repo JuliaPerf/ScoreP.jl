@@ -4,11 +4,32 @@
 
 **This package is currently in pre-alpha condition. Don't expect anything to work!**
 
-## Demo
+## Install
 
-### Basics
+### ScoreP.jl (Julia Interface)
 
-#### Profiling
+```julia
+] add https://github.com/JuliaPerf/ScoreP.jl
+```
+
+### Score-P (Parent Software)
+
+```
+wget https://perftools.pages.jsc.fz-juelich.de/cicd/scorep/tags/scorep-7.1/scorep-7.1.tar.gz
+tar -xf scorep-7.1.tar.gx
+cd scorep-7.1/
+mkdir build
+cd build
+../configure --enable-shared
+make -j 4
+sudo make install
+```
+
+**Note:** You might want to also provide a `--prefix=/my/user/dir/` to `configure` to install into non-global user directory. In this case, you can drop the `sudo` in the last line.
+
+## Basics
+
+### Profiling
 
 ```julia
 # example.jl
@@ -38,7 +59,7 @@ Running this (`julia example.jl`) generates a folder, e.g., `scorep-20230127_160
 
 <img alt="ex_basic_cube" src="https://user-images.githubusercontent.com/187980/215124028-9d5cc801-f937-4a96-9d22-5543a365cec0.png">
 
-#### Profiling + Tracing
+### Profiling + Tracing
 
 Running the same example with `export SCOREP_ENABLE_TRACING=true` the output folder will besides the profiling results contain tracing information as well, specifically, a file `traces.otf2`. The latter can be opened with the (commerical) software [Vampir](https://vampir.eu/) and should give you something like the following.
 
@@ -46,7 +67,7 @@ Running the same example with `export SCOREP_ENABLE_TRACING=true` the output fol
 
 On Linux and Windows, it should also be possible to use the [Intel Trace Analyzer](https://www.intel.com/content/www/us/en/developer/tools/oneapi/trace-analyzer.html#gs.oc8bgr) or other OTF2 visualizers.
 
-### MPI
+## MPI
 
 ```julia
 # mpi_example.jl
@@ -141,30 +162,6 @@ main()
 
 <img alt="ex_mpi_cube" src="https://user-images.githubusercontent.com/187980/215132355-5bb86fd8-f637-4467-a79a-41d12b3990bc.png">
 <img alt="ex_mpi_vampir" src="https://user-images.githubusercontent.com/187980/215132435-1a3ec376-37d0-417f-b31b-8fe77a5e96e7.png">
-
-
-## Install
-
-### ScoreP.jl (Julia Interface)
-
-```julia
-] add https://github.com/JuliaPerf/ScoreP.jl
-```
-
-### Score-P (Parent Software)
-
-```
-wget https://perftools.pages.jsc.fz-juelich.de/cicd/scorep/tags/scorep-7.1/scorep-7.1.tar.gz
-tar -xf scorep-7.1.tar.gx
-cd scorep-7.1/
-mkdir build
-cd build
-../configure --enable-shared
-make -j 4
-sudo make install
-```
-
-**Note:** You might want to also provide a `--prefix=/my/user/dir/` to `configure` to install into non-global user directory. In this case, you can drop the `sudo` in the last line.
 
 ## Score-P Ecosystem
 
