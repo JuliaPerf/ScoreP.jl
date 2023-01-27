@@ -34,13 +34,13 @@ end
 
 Running this (`julia example.jl`) generates a folder, e.g., `scorep-20230127_1603_20921538990107094` (you can set `export SCOREP_EXPERIMENT_DIRECTORY=foldername` to choose a specific folder name up-front). In it is a `profile.cubex` file which contains the profiling information. You can open `.cubex` files with [Cube](https://www.scalasca.org/scalasca/software/cube-4.x/download.html). For the example above, this should give you something like this:
 
-TODO
+<img alt="ex_basic_cube" src="https://user-images.githubusercontent.com/187980/215124028-9d5cc801-f937-4a96-9d22-5543a365cec0.png">
 
 #### Tracing
 
 Running the same example with `export SCOREP_ENABLE_TRACING=true` the output folder will besides the profiling results contain tracing information as well, specifically, a file `traces.otf2`. The latter can be opened with the (commerical) software [Vampir](https://vampir.eu/) and should give you something like the following.
 
-TODO
+<img alt="ex_basic_vampir" src="https://user-images.githubusercontent.com/187980/215124135-e3eba293-560d-474f-a3b5-b99e6cb8f07c.png">
 
 On Linux and Windows, it should also be possible to use the [Intel Trace Analyzer](https://www.intel.com/content/www/us/en/developer/tools/oneapi/trace-analyzer.html#gs.oc8bgr) or other OTF2 visualizers.
 
