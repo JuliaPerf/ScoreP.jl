@@ -139,6 +139,8 @@ end
 main()
 ```
 
+<img alt="ex_mpi_cube" src="https://user-images.githubusercontent.com/187980/215132355-5bb86fd8-f637-4467-a79a-41d12b3990bc.png">
+<img alt="ex_mpi_vampir" src="https://user-images.githubusercontent.com/187980/215132435-1a3ec376-37d0-417f-b31b-8fe77a5e96e7.png">
 
 
 ## Install
