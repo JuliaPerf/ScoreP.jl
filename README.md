@@ -8,6 +8,8 @@
 
 ### Basics
 
+#### Profiling
+
 ```julia
 # example.jl
 using ScoreP
@@ -36,7 +38,7 @@ Running this (`julia example.jl`) generates a folder, e.g., `scorep-20230127_160
 
 <img alt="ex_basic_cube" src="https://user-images.githubusercontent.com/187980/215124028-9d5cc801-f937-4a96-9d22-5543a365cec0.png">
 
-#### Tracing
+#### Profiling + Tracing
 
 Running the same example with `export SCOREP_ENABLE_TRACING=true` the output folder will besides the profiling results contain tracing information as well, specifically, a file `traces.otf2`. The latter can be opened with the (commerical) software [Vampir](https://vampir.eu/) and should give you something like the following.
 
